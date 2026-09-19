@@ -1,0 +1,7 @@
+# Local state / generated reports
+*.log
+*.csv
+*.json
+reports/
+__pycache__/
+*.pyc
