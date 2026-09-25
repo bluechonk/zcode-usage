@@ -14,6 +14,40 @@ uv run --no-project usage.py --all        # every section
 uv run --no-project usage.py --days 7     # last 7 days only
 ```
 
+## Desktop app
+
+`usage_app.py` serves the same read-only reports as a native desktop panel
+(**PySide6 / Qt**, the project's only third-party dependency — the CLI itself
+stays zero-dependency):
+
+```powershell
+uv sync                        # one-time: install PySide6
+uv run usage_app.py            # open the desktop panel
+uv run usage_app.py --db PATH  # other database (or set ZCODE_DB)
+```
+
+Eight tabs (one per section), a daily-trend bar chart (QtCharts), clickable
+column sorting, filters (days / provider / model / session), a per-tab row
+limit, a 30s auto-refresh toggle and a dark theme. Queries run on a worker
+thread; every filter is bound as a SQL parameter and the database stays
+read-only — same guarantees as the CLI.
+
+### Session browser
+
+The **会话浏览** tab (rightmost) is a CC-switch-style conversation browser:
+
+- **Left panel** — session list with 活跃 / 归档 toggle buttons, a text
+  filter (title / directory), and per-session metadata (time, task type,
+  message count, token total). Most recently updated first.
+- **Right panel** — the full conversation context of the selected session:
+  user messages (from `message.data.metadata.inputIntent.text`), assistant
+  text blocks, reasoning, tool calls (name, status, input), step/token
+  summaries, compaction events and errors — rendered as a readable chat
+  transcript with dark-theme HTML.
+
+Both panels load lazily on tab switch; message threads load on session
+click, each on its own worker thread.
+
 ## Options
 
 | Flag | Meaning |
@@ -69,6 +103,21 @@ straight into a PowerShell prompt makes PowerShell try to parse it as cmdlets.
 ```powershell
 sqlite3 -header -column "C:\Users\<you>\.zcode\cli\db\db.sqlite" `
   "SELECT provider_id, model_id, COUNT(*) FROM model_usage GROUP BY 1,2;"
+```
+
+## Development
+
+Lint and format (config in `pyproject.toml`, ruff pinned as a dev dependency):
+
+```bash
+uv run ruff check .
+uv run ruff format --check .
+```
+
+Tests (throwaway DB, Qt runs offscreen):
+
+```bash
+uv run --no-project python -m unittest discover -s tests -t .
 ```
 
 ## Notes

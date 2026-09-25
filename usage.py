@@ -21,6 +21,7 @@ Usage:
   uv run --no-project usage.py --all           # every section
   uv run --no-project usage.py --sql           # print the SQL behind each section
 """
+
 import argparse
 import os
 import sqlite3
@@ -28,8 +29,11 @@ import sys
 import time
 from pathlib import Path
 
-DB_PATH = (Path(os.environ["ZCODE_DB"]) if os.environ.get("ZCODE_DB") else
-           Path(os.environ["USERPROFILE"]) / ".zcode" / "cli" / "db" / "db.sqlite")
+DB_PATH = (
+    Path(os.environ["ZCODE_DB"])
+    if os.environ.get("ZCODE_DB")
+    else Path(os.environ["USERPROFILE"]) / ".zcode" / "cli" / "db" / "db.sqlite"
+)
 
 LOCALTIME = "datetime({col}/1000,'unixepoch','localtime')"
 DAY = "date({col}/1000,'unixepoch','localtime')"
@@ -197,8 +201,9 @@ def build(name, args):
         return _Q_CACHE.format(where=w), p
     if name == "tools":
         # tool_usage has no provider/model columns — filter on session/days only
-        tool_args = argparse.Namespace(days=args.days, session=args.session,
-                                       provider=None, model=None)
+        tool_args = argparse.Namespace(
+            days=args.days, session=args.session, provider=None, model=None
+        )
         w, p = _filters(tool_args, alias="t")
         return _Q_TOOLS.format(where=w), p
     if name == "sessions":
@@ -243,8 +248,9 @@ def connect(path: Path) -> sqlite3.Connection:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0],
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__.splitlines()[0], formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     ap.add_argument("--days", type=int, help="only the last N days")
     ap.add_argument("--provider", help="filter by provider_id")
     ap.add_argument("--model", help="filter by model_id")
